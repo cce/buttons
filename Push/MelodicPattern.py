@@ -1,5 +1,14 @@
 # Embedded file name: /Users/versonator/Jenkins/live/Binary/Core_Release_64_static/midi-remote-scripts/Push/MelodicPattern.py
 from _Framework.Util import NamedTuple, lazy_attribute, memoize
+import logging
+log = logging.getLogger(__name__)
+_log_fh = logging.FileHandler('/Users/cce/push/mp.log')
+_log_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log.setLevel(logging.DEBUG)
+_log_fh.setLevel(logging.DEBUG)
+_log_fh.setFormatter(_log_fmt)
+log.addHandler(_log_fh)
+
 import consts
 NOTE_NAMES = ('C', 'D\x1b', 'D', 'E\x1b', 'E', 'F', 'G\x1b', 'G', 'A\x1b', 'A', 'B\x1b', 'B')
 
@@ -32,7 +41,6 @@ class NoteInfo(NamedTuple):
     channel = 0
     color = 'NoteInvalid'
 
-
 class MelodicPattern(NamedTuple):
     steps = [0, 0]
     scale = range(12)
@@ -53,24 +61,32 @@ class MelodicPattern(NamedTuple):
         return not self.origin[0] and not self.origin[1] and abs(self.base_note) % 12 == self.extended_scale[0]
 
     def note(self, x, y):
-        return self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
+        ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
+        log.info("note(%r, %r) returning %s", x, y, str(ret))
+        return ret
 
     def __getitem__(self, i):
+
         base_note = self.base_note
         if base_note <= -12:
             base_note = 0 if self.is_aligned else -12
-        return self._get_note_info(self._octave_and_note_linear(i), base_note)
+        ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
+        log.info("__getitem__(%r) returning %r", i, ret)
+        return ret
 
     def _octave_and_note_by_index(self, index):
         scale = self.extended_scale
         scale_size = len(scale)
         octave = index / scale_size
         note = scale[index % scale_size]
+        log.info("_octave_and_note_by_index(%r) returning %r", index, (octave, note))
         return (octave, note)
 
     def _octave_and_note(self, x, y):
         index = self.steps[0] * (self.origin[0] + x) + self.steps[1] * (self.origin[1] + y)
-        return self._octave_and_note_by_index(index)
+        ret = self._octave_and_note_by_index(index)
+        log.info("_octave_and_note(%r) returning %r", index, ret)
+        return ret
 
     def _color_for_note(self, note):
         if note == self.scale[0]:
