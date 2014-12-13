@@ -48,6 +48,10 @@ class MelodicPattern(NamedTuple):
     origin = [0, 0]
     chromatic_mode = False
 
+    def __init__(self, *args, **kw):
+        log.info("MelodicPattern() args %r kw %r", args, kw)
+        super(MelodicPattern, self).__init__(*args, **kw)
+
     @lazy_attribute
     def extended_scale(self):
         if self.chromatic_mode:
