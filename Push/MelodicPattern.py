@@ -1,19 +1,13 @@
 # Embedded file name: /Users/versonator/Jenkins/live/Binary/Core_Release_64_static/midi-remote-scripts/Push/MelodicPattern.py
 # pylint: disable=W0232,C0111,C0301,F0401
 from _Framework.Util import NamedTuple, lazy_attribute, memoize
-log = None
-def _init_log():
-    global log
-    import logging
-    _log_fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-    _log_fh = logging.FileHandler('/Users/cce/push/mp.log')
-    _log_fh.setLevel(logging.DEBUG)
-    _log_fh.setFormatter(_log_fmt)
-    log = logging.getLogger(__name__)
-    log.setLevel(logging.DEBUG)
-    log.addHandler(_log_fh)
-if log == None:
-    _init_log()
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='/Users/cce/push/MelodicPattern.log',
+    format='%(asctime)s %(process)d %(name)s %(levelname)s %(message)s',
+)
+log = logging.getLogger(__name__)
 
 import consts
 NOTE_NAMES = ('C', 'D\x1b', 'D', 'E\x1b', 'E', 'F', 'G\x1b', 'G', 'A\x1b', 'A', 'B\x1b', 'B')
@@ -58,7 +52,7 @@ TROMBONE = [
     [19, 18, 17, 16, 15, 14, 13, 12],
     [22, 21, 20, 19, 18, 17, 16, 15],
     [24, 23, 22, 21, 20, 19, 18, 17],
-    [26, 25, 24, 23, 22, 21, 20, 19], # y=7
+    [28, 27, 26, 25, 24, 23, 22, 21], #, 20, 19], # y=7
 ]
 
 class MelodicPattern(NamedTuple):
@@ -94,7 +88,7 @@ class MelodicPattern(NamedTuple):
         else:
             color = 'NoteNotScale'
         ret = NoteInfo(index=tbn+base_note, channel=channel, color=color)
-        log.info("_get_trombone(%r, %r, %r, %r) returning %s", x, y, base_note, channel, ret)
+        log.info("_get_trombone(%r, %r, %r, %r) origin %r returning %s", x, y, base_note, channel, self.origin, ret)
         return ret
 
     def note(self, x, y):
