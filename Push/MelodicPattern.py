@@ -61,16 +61,13 @@ TROMBONE = [
     [26, 25, 24, 23, 22, 21, 20, 19], # y=7
 ]
 
-    def __str__(self):
-        return ("NoteInfo(index=%r, channel=%r, color=%r)" %
-                (self.index, self.channel, self.color))
-
 class MelodicPattern(NamedTuple):
     steps = [0, 0]
     scale = range(12)
     base_note = 0
     origin = [0, 0]
     chromatic_mode = False
+    custom_mode = None
 
     def __init__(self, *args, **kw):
         log.info("MelodicPattern() args %r kw %r", args, kw)
@@ -90,24 +87,32 @@ class MelodicPattern(NamedTuple):
 
     def _get_trombone(self, x, y, base_note, channel=0):
         tbn = TROMBONE[y][x]
-        color = 'NoteScale' if tbn % 12 else 'NoteBase'
+        if (tbn % 12) == 0:
+            color = 'NoteBase'
+        elif (tbn % 12) in self.scale:
+            color = 'NoteScale'
+        else:
+            color = 'NoteNotScale'
         ret = NoteInfo(index=tbn+base_note, channel=channel, color=color)
         log.info("_get_trombone(%r, %r, %r, %r) returning %s", x, y, base_note, channel, ret)
         return ret
 
     def note(self, x, y):
-        #ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
-        ret = self._get_trombone(x, y, self.base_note, x+5)
+        if self.custom_mode == 'etbn':
+            ret = self._get_trombone(x, y, self.base_note, x+5)
+        else:
+            ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
         log.info("note(%r, %r) returning %s", x, y, ret)
         return ret
 
     def __getitem__(self, i):
-
         base_note = self.base_note
         if base_note <= -12:
             base_note = 0 if self.is_aligned else -12
-        #ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
-        ret = self._get_trombone(i, 0, base_note)
+        if self.custom_mode == 'etbn':
+            ret = self._get_trombone(i, 0, base_note)
+        else:
+            ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
         log.info("__getitem__(%r) returning %s", i, ret)
         return ret
 
