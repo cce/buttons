@@ -61,6 +61,10 @@ TROMBONE = [
     [26, 25, 24, 23, 22, 21, 20, 19], # y=7
 ]
 
+    def __str__(self):
+        return ("NoteInfo(index=%r, channel=%r, color=%r)" %
+                (self.index, self.channel, self.color))
+
 class MelodicPattern(NamedTuple):
     steps = [0, 0]
     scale = range(12)
@@ -94,7 +98,7 @@ class MelodicPattern(NamedTuple):
     def note(self, x, y):
         #ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
         ret = self._get_trombone(x, y, self.base_note, x+5)
-        log.info("note(%r, %r) returning %r", x, y, str(ret))
+        log.info("note(%r, %r) returning %s", x, y, ret)
         return ret
 
     def __getitem__(self, i):
@@ -104,7 +108,7 @@ class MelodicPattern(NamedTuple):
             base_note = 0 if self.is_aligned else -12
         #ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
         ret = self._get_trombone(i, 0, base_note)
-        log.info("__getitem__(%r) returning %r", i, str(ret))
+        log.info("__getitem__(%r) returning %s", i, ret)
         return ret
 
     def _octave_and_note_by_index(self, index):
