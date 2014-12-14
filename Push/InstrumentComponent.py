@@ -9,7 +9,7 @@ from _Framework.SubjectSlot import subject_slot, subject_slot_group
 from MessageBoxComponent import Messenger
 from ScrollableList import ListComponent
 from SlideComponent import SlideComponent, Slideable
-from MelodicPattern import MelodicPattern, Modus, pitch_index_to_string
+from MelodicPattern import MelodicPattern, Modus, pitch_index_to_string, log
 from MatrixMaps import NON_FEEDBACK_CHANNEL
 import Sysex
 import consts
@@ -555,6 +555,8 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
         else:
             steps = [interval, 1]
             origin = [0, offset]
+        log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r",
+                 first_note, interval, notes, self.page_length, octave, offset)
         return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12, chromatic_mode=not self._scales.is_diatonic)
 
     def _update_aftertouch(self):

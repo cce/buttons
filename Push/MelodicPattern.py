@@ -1,13 +1,18 @@
 # Embedded file name: /Users/versonator/Jenkins/live/Binary/Core_Release_64_static/midi-remote-scripts/Push/MelodicPattern.py
 from _Framework.Util import NamedTuple, lazy_attribute, memoize
-import logging
-log = logging.getLogger(__name__)
-_log_fh = logging.FileHandler('/Users/cce/push/mp.log')
-_log_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-log.setLevel(logging.DEBUG)
-_log_fh.setLevel(logging.DEBUG)
-_log_fh.setFormatter(_log_fmt)
-log.addHandler(_log_fh)
+log = None
+def _init_log():
+    global log
+    import logging
+    _log_fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+    _log_fh = logging.FileHandler('/Users/cce/push/mp.log')
+    _log_fh.setLevel(logging.DEBUG)
+    _log_fh.setFormatter(_log_fmt)
+    log = logging.getLogger(__name__)
+    log.setLevel(logging.DEBUG)
+    log.addHandler(_log_fh)
+if log == None:
+    _init_log()
 
 import consts
 NOTE_NAMES = ('C', 'D\x1b', 'D', 'E\x1b', 'E', 'F', 'G\x1b', 'G', 'A\x1b', 'A', 'B\x1b', 'B')
