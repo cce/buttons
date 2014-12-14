@@ -46,6 +46,10 @@ class NoteInfo(NamedTuple):
     channel = 0
     color = 'NoteInvalid'
 
+    def __str__(self):
+        return ("NoteInfo(index=%r, channel=%r, color=%r)" %
+                (self.index, self.channel, self.color))
+
 class MelodicPattern(NamedTuple):
     steps = [0, 0]
     scale = range(12)
@@ -71,7 +75,7 @@ class MelodicPattern(NamedTuple):
 
     def note(self, x, y):
         ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
-        log.info("note(%r, %r) returning %s", x, y, str(ret))
+        log.info("note(%r, %r) returning %s", x, y, ret)
         return ret
 
     def __getitem__(self, i):
@@ -80,7 +84,7 @@ class MelodicPattern(NamedTuple):
         if base_note <= -12:
             base_note = 0 if self.is_aligned else -12
         ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
-        log.info("__getitem__(%r) returning %r", i, ret)
+        log.info("__getitem__(%r) returning %s", i, ret)
         return ret
 
     def _octave_and_note_by_index(self, index):
