@@ -1,4 +1,5 @@
 # Embedded file name: /Users/versonator/Jenkins/live/Binary/Core_Release_64_static/midi-remote-scripts/Push/MelodicPattern.py
+# pylint: disable=W0232,C0111,C0301,F0401
 from _Framework.Util import NamedTuple, lazy_attribute, memoize
 log = None
 def _init_log():
@@ -45,6 +46,20 @@ class NoteInfo(NamedTuple):
     index = None
     channel = 0
     color = 'NoteInvalid'
+    def __str__(self):
+        return ("NoteInfo(index=%r, channel=%r, color=%r)" %
+                (self.index, self.channel, self.color))
+
+TROMBONE = [
+    [ 0, -1, -2, -3, -4, -5, -6, -7], # y=0
+    [ 7,  6,  5,  4,  3,  2,  1,  0],
+    [12, 11, 10,  9,  8,  7,  6,  5],
+    [16, 15, 14, 13, 12, 11, 10,  9],
+    [19, 18, 17, 16, 15, 14, 13, 12],
+    [22, 21, 20, 19, 18, 17, 16, 15],
+    [24, 23, 22, 21, 20, 19, 18, 17],
+    [26, 25, 24, 23, 22, 21, 20, 19], # y=7
+]
 
 class MelodicPattern(NamedTuple):
     steps = [0, 0]
@@ -69,9 +84,17 @@ class MelodicPattern(NamedTuple):
     def is_aligned(self):
         return not self.origin[0] and not self.origin[1] and abs(self.base_note) % 12 == self.extended_scale[0]
 
+    def _get_trombone(self, x, y, base_note, channel=0):
+        tbn = TROMBONE[y][x]
+        color = 'NoteScale' if tbn % 12 else 'NoteBase'
+        ret = NoteInfo(index=tbn+base_note, channel=channel, color=color)
+        log.info("_get_trombone(%r, %r, %r, %r) returning %s", x, y, base_note, channel, ret)
+        return ret
+
     def note(self, x, y):
-        ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
-        log.info("note(%r, %r) returning %s", x, y, str(ret))
+        #ret = self._get_note_info(self._octave_and_note(x, y), self.base_note, x + 5)
+        ret = self._get_trombone(x, y, self.base_note, x+5)
+        log.info("note(%r, %r) returning %r", x, y, str(ret))
         return ret
 
     def __getitem__(self, i):
@@ -79,8 +102,9 @@ class MelodicPattern(NamedTuple):
         base_note = self.base_note
         if base_note <= -12:
             base_note = 0 if self.is_aligned else -12
-        ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
-        log.info("__getitem__(%r) returning %r", i, ret)
+        #ret = self._get_note_info(self._octave_and_note_linear(i), base_note)
+        ret = self._get_trombone(i, 0, base_note)
+        log.info("__getitem__(%r) returning %r", i, str(ret))
         return ret
 
     def _octave_and_note_by_index(self, index):
