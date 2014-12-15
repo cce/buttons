@@ -10,6 +10,7 @@ from MessageBoxComponent import Messenger
 from ScrollableList import ListComponent
 from SlideComponent import SlideComponent, Slideable
 from MelodicPattern import MelodicPattern, Modus, pitch_index_to_string, log
+import Trombone
 from MatrixMaps import NON_FEEDBACK_CHANNEL
 import Sysex
 import consts
@@ -17,7 +18,7 @@ import consts
 class InstrumentPresetsComponent(DisplayingModesComponent):
     is_horizontal = True
     interval = 3
-    custom_mode = None
+    custom_pattern = None
     __subject_events__ = ('scale_mode',)
 
     def __init__(self, *a, **k):
@@ -29,7 +30,7 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         self.add_mode('scale_m3_horizontal', partial(self._set_scale_mode, False, 2), self._line_names[1][3])
         self.add_mode('scale_m6_vertical', partial(self._set_scale_mode, True, None), self._line_names[1][4])
         self.add_mode('scale_m6_horizontal', partial(self._set_scale_mode, False, None), self._line_names[1][5])
-        self.add_mode('scale_etbn', partial(self._set_scale_mode, True, None, 'etbn'), self._line_names[1][6])
+        self.add_mode('scale_etbn', partial(self._set_scale_mode, True, None, Trombone.TrombonePattern), self._line_names[1][6])
         return
 
     def _update_data_sources(self, selected):
@@ -37,11 +38,11 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
             for name, (source, string) in self._mode_data_sources.iteritems():
                 source.set_display_string(consts.CHAR_SELECT + string if name == selected else string)
 
-    def _set_scale_mode(self, is_horizontal, interval, custom_mode=None):
+    def _set_scale_mode(self, is_horizontal, interval, custom_pattern=None):
         if self.is_horizontal != is_horizontal or self.interval != interval:
             self.is_horizontal = is_horizontal
             self.interval = interval
-            self.custom_mode = custom_mode
+            self.custom_pattern = custom_pattern
             self.notify_scale_mode()
 
     def set_top_display_line(self, display):
@@ -558,9 +559,17 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
         else:
             steps = [interval, 1]
             origin = [0, offset]
-        log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r",
-                 first_note, interval, notes, self.page_length, octave, offset)
-        return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12, chromatic_mode=not self._scales.is_diatonic, custom_mode=self._scales._presets.custom_mode)
+        log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r is_absolute %r custom %r",
+                 first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern)
+        if self._scales._presets.custom_pattern:
+            #reload(Trombone)
+            return self._scales._presets.custom_pattern(
+                steps=steps, scale=notes, origin=origin, base_note=octave*12,
+                chromatic_mode=not self._scales.is_diatonic,
+                is_absolute=self._scales.is_absolute)
+        else:
+            return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12,
+                                  chromatic_mode=not self._scales.is_diatonic)
 
     def _update_aftertouch(self):
         if self.is_enabled() and self._aftertouch_control != None:
