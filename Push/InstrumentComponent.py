@@ -564,8 +564,8 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
         if self._scales._presets.custom_pattern == 'etbn':
             reload(Trombone)
             return Trombone.TrombonePattern(
-                steps=steps, scale=notes, origin=origin, base_note=octave*12,
-                chromatic_mode=not self._scales.is_diatonic,
+                steps=steps, scale=notes, origin=origin, octave=octave,
+                is_diatonic=self._scales.is_diatonic,
                 is_absolute=self._scales.is_absolute)
         else:
             return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12,

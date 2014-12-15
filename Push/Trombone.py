@@ -15,40 +15,40 @@ TROMBONE = [
 class TrombonePattern(NamedTuple):
     steps = [0, 0]
     scale = range(12)
-    base_note = 0
+    octave = 0
     origin = [0, 0]
-    chromatic_mode = False
-    is_absolute = None
+    is_diatonic = True
+    is_absolute = False
 
     def __init__(self, *args, **kw):
         log.debug("TrombonePattern() args %r kw %r", args, kw)
         super(self.__class__, self).__init__(*args, **kw)
 
-    def _get_trombone(self, x, y, base_note, channel=0):
+    def _get_trombone(self, x, y, channel=0):
         if self.is_absolute:
             Bb = 46 # XXX octave
-            tbn = TROMBONE[y][x] + Bb
-
-        tbn = TROMBONE[y][x] + self.origin[0]
-        if (tbn % 12) == self.scale[0]:
+            index = TROMBONE[y][x] + Bb + (self.octave - 3) * 12
+        else:
+            index = TROMBONE[y][x] + self.origin[0] + self.octave * 12
+        if (index % 12) == (self.scale[0] % 12):
             color = 'NoteBase'
-        elif (tbn % 12) in self.scale:
+        elif (index % 12) == ((self.scale[0] + 7) % 12):
+            color = 'NoteFifth'
+        elif not self.is_diatonic or (index % 12) in ((i % 12) for i in self.scale):
             color = 'NoteScale'
         else:
             color = 'NoteNotScale'
-        ret = NoteInfo(index=tbn+base_note, channel=channel, color=color)
-        log.info("_get_trombone(%r, %r, %r, %r) origin %r returning %s", x, y, base_note, channel, self.origin, ret)
+        ret = NoteInfo(index=index, channel=channel, color=color)
+        log.info("_get_trombone(%r, %r, %r) is_absolute %r origin %r returning %s", x, y, channel,
+                 self.is_absolute, self.origin, ret)
         return ret
 
     def note(self, x, y):
-        ret = self._get_trombone(x, y, self.base_note, x+5)
+        ret = self._get_trombone(x, y, x+5)
         log.info("TP.note(%r, %r) returning %s", x, y, ret)
         return ret
 
     def __getitem__(self, i):
-        base_note = self.base_note
-        if base_note <= -12:
-            base_note = 0 if self.is_aligned else -12
-        ret = self._get_trombone(i, 0, base_note)
+        ret = self._get_trombone(i, 0)
         log.info("TP.__getitem__(%r) returning %s", i, ret)
         return ret
