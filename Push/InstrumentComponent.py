@@ -30,7 +30,7 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         self.add_mode('scale_m3_horizontal', partial(self._set_scale_mode, False, 2), self._line_names[1][3])
         self.add_mode('scale_m6_vertical', partial(self._set_scale_mode, True, None), self._line_names[1][4])
         self.add_mode('scale_m6_horizontal', partial(self._set_scale_mode, False, None), self._line_names[1][5])
-        self.add_mode('scale_etbn', partial(self._set_scale_mode, True, None, Trombone.TrombonePattern), self._line_names[1][6])
+        self.add_mode('scale_etbn', partial(self._set_scale_mode, True, None, 'etbn'), self._line_names[1][6])
         return
 
     def _update_data_sources(self, selected):
@@ -561,9 +561,9 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
             origin = [0, offset]
         log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r is_absolute %r custom %r",
                  first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern)
-        if self._scales._presets.custom_pattern:
-            #reload(Trombone)
-            return self._scales._presets.custom_pattern(
+        if self._scales._presets.custom_pattern == 'etbn':
+            reload(Trombone)
+            return Trombone.TrombonePattern(
                 steps=steps, scale=notes, origin=origin, base_note=octave*12,
                 chromatic_mode=not self._scales.is_diatonic,
                 is_absolute=self._scales.is_absolute)

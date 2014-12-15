@@ -21,8 +21,8 @@ class TrombonePattern(NamedTuple):
     is_absolute = None
 
     def __init__(self, *args, **kw):
-        log.debug("TrombonePattern() args %r kw %r self %r", args, kw, self)
-        super(TrombonePattern, self).__init__(*args, **kw)
+        log.debug("TrombonePattern() args %r kw %r", args, kw)
+        super(self.__class__, self).__init__(*args, **kw)
 
     def _get_trombone(self, x, y, base_note, channel=0):
         if self.is_absolute:
