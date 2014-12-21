@@ -562,7 +562,12 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
         log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r is_absolute %r custom %r",
                  first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern)
         if self._scales._presets.custom_pattern == 'etbn':
-            reload(Trombone)
+            try:
+                reload(Trombone)
+            except Exception:
+                log.exception("_get_pattern exception reloading Trombone, still running %r", Trombone.VERSION)
+            else:
+                log.info("_get_pattern reloaded Trombone %r", Trombone.VERSION)
             return Trombone.TrombonePattern(
                 steps=steps, scale=notes, origin=origin, octave=octave,
                 is_diatonic=self._scales.is_diatonic,
