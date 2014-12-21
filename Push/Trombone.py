@@ -1,5 +1,7 @@
 from _Framework.Util import NamedTuple
 from MelodicPattern import NoteInfo, log
+from datetime import datetime
+VERSION = "1-" + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 
 TROMBONE = [
     [ 0, -1, -2, -3, -4, -5, -6, -7], # y=0
@@ -21,8 +23,8 @@ class TrombonePattern(NamedTuple):
     is_absolute = False
 
     def __init__(self, *args, **kw):
+        super(self.__class__, self).__init__(*args, **kw) # avoids TypeError http://stackoverflow.com/a/18476192/112380
         log.debug("TrombonePattern() args %r kw %r", args, kw)
-        super(self.__class__, self).__init__(*args, **kw)
 
     def _get_trombone(self, x, y, channel=0):
         if self.is_absolute:
@@ -45,10 +47,10 @@ class TrombonePattern(NamedTuple):
 
     def note(self, x, y):
         ret = self._get_trombone(x, y, x+5)
-        log.info("TP.note(%r, %r) returning %s", x, y, ret)
+        log.debug("TP.note(%r, %r) returning %s", x, y, ret)
         return ret
 
     def __getitem__(self, i):
         ret = self._get_trombone(i, 0)
-        log.info("TP.__getitem__(%r) returning %s", i, ret)
+        log.debug("TP.__getitem__(%r) returning %s", i, ret)
         return ret
