@@ -569,6 +569,7 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
             else:
                 log.info("_get_pattern reloaded Trombone %r", Trombone.VERSION)
             return Trombone.TrombonePattern(
+                first_note=first_note,
                 steps=steps, scale=notes, origin=origin, octave=octave,
                 is_diatonic=self._scales.is_diatonic,
                 is_absolute=self._scales.is_absolute)
