@@ -1,7 +1,7 @@
 from _Framework.Util import NamedTuple
 from MelodicPattern import NoteInfo, log
-from datetime import datetime
-VERSION = "1-" + datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+import os
+VERSION = "1-" + os.path.getmtime(os.path.abspath(__file__)).strftime('%Y-%m-%d-%H:%M:%S')
 
 TROMBONE = [
     [ 0, -1, -2, -3, -4, -5, -6, -7], # y=0
@@ -14,7 +14,10 @@ TROMBONE = [
     [28, 27, 26, 25, 24, 23, 22, 21], #, 20, 19], # y=7
 ]
 
+Bb = 46
+
 class TrombonePattern(NamedTuple):
+    first_note = 0
     steps = [0, 0]
     scale = range(12)
     octave = 0
@@ -28,10 +31,14 @@ class TrombonePattern(NamedTuple):
 
     def _get_trombone(self, x, y, channel=0):
         if self.is_absolute:
-            Bb = 46 # XXX octave
-            index = TROMBONE[y][x] + Bb + (self.octave - 3) * 12
+            base = Bb
+        elif self.is_diatonic:
+            base = self.first_note
         else:
-            index = TROMBONE[y][x] + self.origin[0] + self.octave * 12
+            base = self.origin[0]
+        index = TROMBONE[y][x] + base + (self.octave - 3) * 12
+
+        # pick color
         if (index % 12) == (self.scale[0] % 12):
             color = 'NoteBase'
         elif (index % 12) == ((self.scale[0] + 7) % 12):
@@ -40,17 +47,18 @@ class TrombonePattern(NamedTuple):
             color = 'NoteScale'
         else:
             color = 'NoteNotScale'
+
         ret = NoteInfo(index=index, channel=channel, color=color)
-        log.info("_get_trombone(%r, %r, %r) is_absolute %r origin %r returning %s", x, y, channel,
+        log.info("_get_trombone(%r, %r, %r)\tabs %r\torigin %r\tret %s", x, y, channel,
                  self.is_absolute, self.origin, ret)
         return ret
 
     def note(self, x, y):
         ret = self._get_trombone(x, y, x+5)
-        log.debug("TP.note(%r, %r) returning %s", x, y, ret)
+        #log.debug("TP.note(%r, %r) returning %s", x, y, ret)
         return ret
 
     def __getitem__(self, i):
         ret = self._get_trombone(i, 0)
-        log.debug("TP.__getitem__(%r) returning %s", i, ret)
+        #log.debug("TP.__getitem__(%r) returning %s", i, ret)
         return ret
