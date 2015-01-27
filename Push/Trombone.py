@@ -1,7 +1,7 @@
 from _Framework.Util import NamedTuple
 from MelodicPattern import NoteInfo, log
-import os
-VERSION = "1-" + os.path.getmtime(os.path.abspath(__file__)).strftime('%Y-%m-%d-%H:%M:%S')
+import os, time
+VERSION = "1-" + time.strftime('%Y-%m-%d-%H:%M:%S', time.gmtime(os.path.getmtime(os.path.abspath(__file__))))
 
 TROMBONE = [
     [ 0, -1, -2, -3, -4, -5, -6, -7], # y=0
@@ -13,8 +13,6 @@ TROMBONE = [
     [24, 23, 22, 21, 20, 19, 18, 17],
     [28, 27, 26, 25, 24, 23, 22, 21], #, 20, 19], # y=7
 ]
-
-Bb = 46
 
 class TrombonePattern(NamedTuple):
     first_note = 0
@@ -31,12 +29,10 @@ class TrombonePattern(NamedTuple):
 
     def _get_trombone(self, x, y, channel=0):
         if self.is_absolute:
-            base = Bb
-        elif self.is_diatonic:
-            base = self.first_note
-        else:
-            base = self.origin[0]
-        index = TROMBONE[y][x] + base + (self.octave - 3) * 12
+            Bb = 46
+            index = TROMBONE[y][x] + Bb + (self.octave - 3) * 12
+        else: # chromatic or diatonic
+            index = TROMBONE[y][x] + self.first_note
 
         # pick color
         if (index % 12) == (self.scale[0] % 12):
