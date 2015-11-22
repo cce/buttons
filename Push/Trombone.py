@@ -22,12 +22,16 @@ class TrombonePattern(NamedTuple):
     origin = [0, 0]
     is_diatonic = True
     is_absolute = False
+    left_handed = False
 
     def __init__(self, *args, **kw):
         super(self.__class__, self).__init__(*args, **kw) # avoids TypeError http://stackoverflow.com/a/18476192/112380
         log.debug("TrombonePattern() args %r kw %r", args, kw)
 
     def _get_trombone(self, x, y, channel=0):
+        if self.left_handed:
+            x = -(x+1) % 8
+
         if self.is_absolute:
             Bb = 46
             index = TROMBONE[y][x] + Bb + (self.octave - 3) * 12
