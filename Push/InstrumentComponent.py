@@ -30,8 +30,8 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         self.add_mode('scale_m3_horizontal', partial(self._set_scale_mode, False, 2), self._line_names[1][3])
         self.add_mode('scale_m6_vertical', partial(self._set_scale_mode, True, None), self._line_names[1][4])
         self.add_mode('scale_m6_horizontal', partial(self._set_scale_mode, False, None), self._line_names[1][5])
-        self.add_mode('scale_etbn', partial(self._set_scale_mode, True, None, 'etbn'), self._line_names[1][6])
-        self.add_mode('scale_etbn_left', partial(self._set_scale_mode, True, None, 'etbn_left'), self._line_names[1][7])
+        self.add_mode('scale_etbn_lr', partial(self._set_scale_mode, True, None, 'etbn_lr'), self._line_names[1][6])
+        self.add_mode('scale_etbn_rl', partial(self._set_scale_mode, True, None, 'etbn_rl'), self._line_names[1][7])
         return
 
     def _update_data_sources(self, selected):
@@ -65,7 +65,7 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         return
 
     def _set_scales_preset_buttons(self, buttons):
-        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn', 'scale_etbn_left')
+        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn_lr', 'scale_etbn_rl')
         self._set_mode_buttons(buttons, modes)
 
     def _set_mode_buttons(self, buttons, modes):
@@ -575,7 +575,7 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
                 steps=steps, scale=notes, origin=origin, octave=octave,
                 is_diatonic=self._scales.is_diatonic,
                 is_absolute=self._scales.is_absolute,
-                left_handed=(custom_pattern.endswith('_left')))
+                left_handed=(custom_pattern.endswith('_rl')))
         else:
             return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12,
                                   chromatic_mode=not self._scales.is_diatonic)
