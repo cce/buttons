@@ -23,7 +23,7 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
 
     def __init__(self, *a, **k):
         super(InstrumentPresetsComponent, self).__init__(*a, **k)
-        self._line_names = recursive_map(DisplayDataSource, (('Scale layout:',), ('4th ^', '4th >', '3rd ^', '3rd >', 'Sequent ^', 'Sequent >', 'etbn', '')))
+        self._line_names = recursive_map(DisplayDataSource, (('Scale layout:',), ('4th ^', '4th >', '3rd ^', '3rd >', 'Sequent ^', 'Sequent >', 'etbn >', 'etbn <')))
         self.add_mode('scale_p4_vertical', partial(self._set_scale_mode, True, 3), self._line_names[1][0])
         self.add_mode('scale_p4_horizontal', partial(self._set_scale_mode, False, 3), self._line_names[1][1])
         self.add_mode('scale_m3_vertical', partial(self._set_scale_mode, True, 2), self._line_names[1][2])
@@ -31,6 +31,7 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         self.add_mode('scale_m6_vertical', partial(self._set_scale_mode, True, None), self._line_names[1][4])
         self.add_mode('scale_m6_horizontal', partial(self._set_scale_mode, False, None), self._line_names[1][5])
         self.add_mode('scale_etbn', partial(self._set_scale_mode, True, None, 'etbn'), self._line_names[1][6])
+        self.add_mode('scale_etbn_left', partial(self._set_scale_mode, True, None, 'etbn_left'), self._line_names[1][7])
         return
 
     def _update_data_sources(self, selected):
@@ -60,11 +61,11 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
     def set_top_buttons(self, buttons):
         if buttons:
             buttons.reset()
-        self._set_scales_preset_buttons(buttons[:7] if buttons else None)
+        self._set_scales_preset_buttons(buttons[:8] if buttons else None)
         return
 
     def _set_scales_preset_buttons(self, buttons):
-        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn')
+        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn', 'scale_etbn_left')
         self._set_mode_buttons(buttons, modes)
 
     def _set_mode_buttons(self, buttons, modes):
@@ -561,7 +562,8 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
             origin = [0, offset]
         log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r is_absolute %r custom %r",
                  first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern)
-        if self._scales._presets.custom_pattern == 'etbn':
+        custom_pattern = self._scales._presets.custom_pattern
+        if custom_pattern and custom_pattern.startswith('etbn'):
             try:
                 reload(Trombone)
             except Exception:
@@ -572,7 +574,8 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
                 first_note=first_note,
                 steps=steps, scale=notes, origin=origin, octave=octave,
                 is_diatonic=self._scales.is_diatonic,
-                is_absolute=self._scales.is_absolute)
+                is_absolute=self._scales.is_absolute,
+                left_handed=(custom_pattern.endswith('_left')))
         else:
             return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12,
                                   chromatic_mode=not self._scales.is_diatonic)
