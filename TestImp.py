@@ -1,5 +1,5 @@
-
-class TestC(object):
+from _Framework.Util import NamedTuple
+class TestC(NamedTuple):
     one = None
     two = None
     def __init__(self, *a, **kw):
