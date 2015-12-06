@@ -11,7 +11,7 @@ from ScrollableList import ListComponent
 from SlideComponent import SlideComponent, Slideable
 from _Framework.Util import NamedTuple
 from MelodicPattern import MelodicPattern, Modus, pitch_index_to_string, log
-import Trombone
+import Trombone, Guitar
 from MatrixMaps import NON_FEEDBACK_CHANNEL
 import Sysex
 import consts
@@ -36,6 +36,7 @@ class CustomPatternLoader(NamedTuple):
 CUSTOM_PATTERNS = {
     'etbn_lr': CustomPatternLoader(module=Trombone, cls='TrombonePattern', direction='lr'),
     'etbn_rl': CustomPatternLoader(module=Trombone, cls='TrombonePattern', direction='rl'),
+    'guitar': CustomPatternLoader(module=Guitar, cls='GuitarPattern', direction='rl')
 }
 
 class InstrumentPresetsComponent(DisplayingModesComponent):
@@ -46,7 +47,8 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
 
     def __init__(self, *a, **k):
         super(InstrumentPresetsComponent, self).__init__(*a, **k)
-        self._line_names = recursive_map(DisplayDataSource, (('Scale layout:',), ('4th ^', '4th >', '3rd ^', '3rd >', 'Sequent ^', 'Sequent >', 'etbn >', 'etbn <')))
+        #self._line_names = recursive_map(DisplayDataSource, (('Scale layout:',), ('4th ^', '4th >', '3rd ^', '3rd >', 'Sequent ^', 'Sequent >', 'etbn >', 'etbn <')))
+        self._line_names = recursive_map(DisplayDataSource, (('Scale layout:',), ('4th ^', '4th >', '3rd ^', '3rd >', 'Sequent ^', 'Sequent >', 'etbn >', 'guitar')))
         self.add_mode('scale_p4_vertical', partial(self._set_scale_mode, True, 3), self._line_names[1][0])
         self.add_mode('scale_p4_horizontal', partial(self._set_scale_mode, False, 3), self._line_names[1][1])
         self.add_mode('scale_m3_vertical', partial(self._set_scale_mode, True, 2), self._line_names[1][2])
@@ -54,7 +56,8 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         self.add_mode('scale_m6_vertical', partial(self._set_scale_mode, True, None), self._line_names[1][4])
         self.add_mode('scale_m6_horizontal', partial(self._set_scale_mode, False, None), self._line_names[1][5])
         self.add_mode('scale_etbn_lr', partial(self._set_scale_mode, True, None, 'etbn_lr'), self._line_names[1][6])
-        self.add_mode('scale_etbn_rl', partial(self._set_scale_mode, True, None, 'etbn_rl'), self._line_names[1][7])
+        #self.add_mode('scale_etbn_rl', partial(self._set_scale_mode, True, None, 'etbn_rl'), self._line_names[1][7])
+        self.add_mode('scale_guitar', partial(self._set_scale_mode, True, None, 'guitar'), self._line_names[1][7])
         return
 
     def _update_data_sources(self, selected):
@@ -88,7 +91,8 @@ class InstrumentPresetsComponent(DisplayingModesComponent):
         return
 
     def _set_scales_preset_buttons(self, buttons):
-        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn_lr', 'scale_etbn_rl')
+        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn_lr', 'scale_guitar')
+#        modes = ('scale_p4_vertical', 'scale_p4_horizontal', 'scale_m3_vertical', 'scale_m3_horizontal', 'scale_m6_vertical', 'scale_m6_horizontal', 'scale_etbn_lr', 'scale_etbn_rl')
         self._set_mode_buttons(buttons, modes)
 
     def _set_mode_buttons(self, buttons, modes):
