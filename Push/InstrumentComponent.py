@@ -9,11 +9,34 @@ from _Framework.SubjectSlot import subject_slot, subject_slot_group
 from MessageBoxComponent import Messenger
 from ScrollableList import ListComponent
 from SlideComponent import SlideComponent, Slideable
+from _Framework.Util import NamedTuple
 from MelodicPattern import MelodicPattern, Modus, pitch_index_to_string, log
 import Trombone
 from MatrixMaps import NON_FEEDBACK_CHANNEL
 import Sysex
 import consts
+
+class CustomPatternLoader(NamedTuple):
+    """ custom pattern factory """
+    def load(self):
+        try:
+            if not self.module:
+                self.module = __import__(self.module_name)
+            reload(self.module) # dev auto-reload
+        except Exception:
+            log.exception("_get_pattern exception loading %r, still running %r", self.module.__name__, getattr(self.module, 'VERSION', None))
+        else:
+            log.info("_get_pattern loaded %r %r", self.module.__name__, getattr(self.module, 'VERSION', None))
+
+    def impl(self, *args, **kw):
+        """ create pattern class """
+        self.load()
+        return getattr(self.module, self.cls)(*args, **kw)
+
+CUSTOM_PATTERNS = {
+    'etbn_lr': CustomPatternLoader(module=Trombone, cls='TrombonePattern', direction='lr'),
+    'etbn_rl': CustomPatternLoader(module=Trombone, cls='TrombonePattern', direction='rl'),
+}
 
 class InstrumentPresetsComponent(DisplayingModesComponent):
     is_horizontal = True
@@ -562,23 +585,16 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
             origin = [0, offset]
         log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r is_absolute %r custom %r",
                  first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern)
-        custom_pattern = self._scales._presets.custom_pattern
-        if custom_pattern and custom_pattern.startswith('etbn'):
-            try:
-                reload(Trombone)
-            except Exception:
-                log.exception("_get_pattern exception reloading Trombone, still running %r", Trombone.VERSION)
-            else:
-                log.info("_get_pattern reloaded Trombone %r", Trombone.VERSION)
-            return Trombone.TrombonePattern(
+        pattern = CUSTOM_PATTERNS.get(self._scales._presets.custom_pattern)
+        if pattern:
+            return pattern.impl(
                 first_note=first_note,
                 steps=steps, scale=notes, origin=origin, octave=octave,
                 is_diatonic=self._scales.is_diatonic,
                 is_absolute=self._scales.is_absolute,
-                left_handed=(custom_pattern.endswith('_rl')))
+                direction=pattern.direction)
         else:
-            return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12,
-                                  chromatic_mode=not self._scales.is_diatonic)
+            return MelodicPattern(steps=steps, scale=notes, origin=origin, base_note=octave * 12, chromatic_mode=not self._scales.is_diatonic)
 
     def _update_aftertouch(self):
         if self.is_enabled() and self._aftertouch_control != None:

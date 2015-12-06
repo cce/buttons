@@ -25,6 +25,7 @@ class TrombonePattern(NamedTuple):
     left_handed = False
 
     def __init__(self, *args, **kw):
+        kw['left_handed'] = kw.get('direction') == 'rl'
         super(self.__class__, self).__init__(*args, **kw) # avoids TypeError http://stackoverflow.com/a/18476192/112380
         log.debug("TrombonePattern() args %r kw %r", args, kw)
 
