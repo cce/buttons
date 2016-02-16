@@ -587,8 +587,8 @@ class InstrumentComponent(CompoundComponent, Slideable, Messenger):
         else:
             steps = [interval, 1]
             origin = [0, offset]
-        log.info("_get_pattern(%r) interval %r notes %r pagelen %r octave %r, offset %r is_absolute %r custom %r",
-                 first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern)
+        log.info("_get_pattern(%r) interval=%r notes=%r pagelen=%r octave=%r, offset=%r is_absolute=%r custom=%r steps=%r origin=%r base_note=%r is_diatonic=%r",
+                 first_note, interval, notes, self.page_length, octave, offset, self._scales.is_absolute, self._scales._presets.custom_pattern, steps, origin, octave*12, self._scales.is_diatonic)
         pattern = CUSTOM_PATTERNS.get(self._scales._presets.custom_pattern)
         if pattern:
             return pattern.impl(

@@ -11,7 +11,7 @@ TROMBONE = [
     [19, 18, 17, 16, 15, 14, 13, 12],
     [22, 21, 20, 19, 18, 17, 16, 15],
     [24, 23, 22, 21, 20, 19, 18, 17],
-    [28, 27, 26, 25, 24, 23, 22, 21], #, 20, 19], # y=7
+    [28, 27, 26, 25, 24, 23, 22, 21], # y=7
 ]
 
 class TrombonePattern(NamedTuple):
@@ -26,18 +26,25 @@ class TrombonePattern(NamedTuple):
 
     def __init__(self, *args, **kw):
         kw['left_handed'] = kw.get('direction') == 'rl'
-        super(self.__class__, self).__init__(*args, **kw) # avoids TypeError http://stackoverflow.com/a/18476192/112380
+        # avoids TypeError http://stackoverflow.com/a/18476192/112380
+        super(self.__class__, self).__init__(*args, **kw)
         log.debug("TrombonePattern() args %r kw %r", args, kw)
 
     def _get_trombone(self, x, y, channel=0):
+        Bb = 46
+        C = 48
+        Bb_off = 10
+
         if self.left_handed:
             x = -(x+1) % 8
 
-        if self.is_absolute:
-            Bb = 46
-            index = TROMBONE[y][x] + Bb + (self.octave - 3) * 12
-        else: # chromatic or diatonic
-            index = TROMBONE[y][x] + self.first_note
+        if self.is_absolute: # fixed 0,0 = Bb
+            octave_off = 3
+            index = TROMBONE[y][x] + Bb
+        else: # transpose trombone to selected key
+            octave_off = 4 if (self.scale[0] >= 10) else 3
+            index = TROMBONE[y][x] + C + self.scale[0]
+        index +=  + (self.octave - octave_off) * 12
 
         # pick color
         if (index % 12) == (self.scale[0] % 12):
@@ -50,8 +57,9 @@ class TrombonePattern(NamedTuple):
             color = 'NoteNotScale'
 
         ret = NoteInfo(index=index, channel=channel, color=color)
-        log.info("_get_trombone(%r, %r, %r)\tabs %r\torigin %r\tret %s", x, y, channel,
-                 self.is_absolute, self.origin, ret)
+        if x==0 and y==0:
+            log.info("_get_trombone(%r, %r, %r)\tabs %r\torigin %r\tret %s", x, y, channel,
+                     self.is_absolute, self.origin, ret)
         return ret
 
     def note(self, x, y):
